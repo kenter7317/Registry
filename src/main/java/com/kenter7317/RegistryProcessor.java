@@ -4,11 +4,15 @@ import com.google.auto.service.AutoService;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import java.io.File;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
+import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -24,26 +28,24 @@ public class RegistryProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Registry.class);
-        for (Element element : elements) {
-            Registry registry = element.getAnnotation(Registry.class);
-            Field field = Field.class.cast(element);
-            Yaml yaml = new Yaml();
-            InputStream inputStream = field.getDeclaringClass().getClassLoader().getResourceAsStream(registry.key() + ".yml");
-            System.out.println(field);
-            if (inputStream == null){
-                File file = new File(field.getDeclaringClass().getClassLoader().getResource(registry.key() + ".yaml").getFile());
-                try {
-                    file.createNewFile();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            Map<String, String> load = yaml.load(inputStream);
-            System.out.println(load);
+        Set<VariableElement> fields = ElementFilter.fieldsIn(elements);
+        for (VariableElement field : fields) {
+            Registry registry = field.getAnnotation(Registry.class);
+            ProcessingEnvironment pe = processingEnv;
+            InputStream ymlStream;
             try {
-                field.set(field.getType(),load.get(registry.value()));
-            } catch (IllegalAccessException e) {
+                ymlStream = pe.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, "", registry.key() + ".yml").openInputStream();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            Yaml yaml = new Yaml();
+            Map load = yaml.load(ymlStream);
+            pe.getMessager().printMessage(Diagnostic.Kind.NOTE, load.get(registry.value()).toString());
+            try {
+                Field f = field.getClass().getDeclaredField(field.getSimpleName().toString());
+                f.setAccessible(true);
+                f.set(null, load.get(registry.value()));
+            } catch (IllegalAccessException | NoSuchFieldException e) {
                 throw new RuntimeException(e);
             }
         }

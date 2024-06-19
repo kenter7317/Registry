@@ -2,11 +2,9 @@ import com.kenter7317.Registry;
 
 public class run {
     @Registry(value = "abc")
-    private String test;
+    private static String test = null;
 
     public static void main(String[] args) {
-        run r = new run();
-        System.out.println(r.test);
-
+        System.out.println(test);
     }
 }
