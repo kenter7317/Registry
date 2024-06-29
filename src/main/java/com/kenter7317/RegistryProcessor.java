@@ -44,7 +44,7 @@ public class RegistryProcessor extends AbstractProcessor {
             try {
                 Field f = field.getClass().getDeclaredField(field.getSimpleName().toString());
                 f.setAccessible(true);
-                f.set(null, load.get(registry.value()));
+                f.set(field.getEnclosingElement().getClass(), load.get(registry.value()));
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 throw new RuntimeException(e);
             }
