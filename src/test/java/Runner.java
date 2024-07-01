@@ -1,5 +1,6 @@
 import com.kenter7317.Registry;
 import com.kenter7317.RegistryProcessor;
+import org.apiguardian.api.API;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -12,13 +13,17 @@ import java.util.Collections;
 
 public class Runner {
     @Registry(value = "abc")
-    private static String test = null;
+    private static String test;
+
+    public static void main(String[] args) {
+        System.out.println(test);
+    }
 
     @TempDir
     Path tempDir;
 
     @Test
-    public void test() throws NoSuchFieldException, InterruptedException, IOException {
+    public void test() throws IOException {
         var compiler = ToolProvider.getSystemJavaCompiler();
 
         var diagnostics = new DiagnosticCollector<JavaFileObject>();
@@ -40,6 +45,8 @@ public class Runner {
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
             System.err.println(diagnostic);
         }
+
+        System.out.println(test);
     }
 
 }
