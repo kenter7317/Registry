@@ -9,18 +9,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
-import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
+@SupportedAnnotationTypes("Registry")
 public class RegistryProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
@@ -36,26 +34,21 @@ public class RegistryProcessor extends AbstractProcessor {
             ProcessingEnvironment pe = processingEnv;
             Class<?> clazz;
             try {
-                clazz = field.getClass().getClassLoader().loadClass(field.getEnclosingElement().getSimpleName().toString());
-            } catch (ClassNotFoundException e) {
+                clazz = field.getEnclosingElement().asType().getClass();
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            FileObject objectFile;
+            URL objectFile;
             Filer filer = pe.getFiler();
             Yaml yaml = new Yaml();
             Map<String, String> load;
             try {
-                objectFile = filer.getResource(StandardLocation.CLASS_OUTPUT, "", registry.key());
-                load = yaml.load(objectFile.getCharContent(true).toString());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            pe.getMessager().printMessage(Diagnostic.Kind.NOTE, load.get(registry.value()).toString());
-            try {
+                objectFile = filer.getResource(StandardLocation., "", registry.key() + ".yml");
+                load = yaml.load(objectFile.());
                 Field f = clazz.getDeclaredField(field.getSimpleName().toString());
                 f.setAccessible(true);
                 f.set(field.asType(), load.get(registry.value()));
-            } catch (IllegalAccessException | NoSuchFieldException e) {
+            } catch (IOException | NoSuchFieldException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }

@@ -1,5 +1,7 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'maven-publish'
 }
 
 group = 'com.kenter7317'
@@ -9,6 +11,17 @@ repositories {
     mavenCentral()
 }
 
+publishing {
+    publications {
+        mavenLocal(MavenPublication) {
+            groupId = 'com.kenter7317'// groupId
+            artifactId = "Registry"
+            version = '1.0.0-SNAPSHOT'
+            artifact '/jars/Registry-1.0.jar'
+        }
+    }
+}
+
 dependencies {
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
     implementation 'org.yaml:snakeyaml:2.2'
@@ -16,9 +29,25 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     // https://mvnrepository.com/artifact/com.google.auto.service/auto-service
     implementation 'com.google.auto.service:auto-service:1.1.1'
+    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
 
 }
 
+jar {
+    finalizedBy shadowJar
+}
+
+shadowJar {
+    destinationDirectory = file("/jars")
+    archiveBaseName.set('Registry')
+    archiveClassifier.set('')
+    archiveVersion.set('1.0')
+}
 test {
     useJUnitPlatform()
+}
+
+clean {
+    delete fileTree('jars/')
+    delete file('/jars')
 }

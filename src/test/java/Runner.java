@@ -15,12 +15,14 @@ public class Runner {
     @Registry(value = "abc")
     private static String test;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchFieldException {
+        Runner.class.getDeclaredField("test").getAnnotation(Registry.class).value(); // Should print "abc"
         System.out.println(test);
     }
 
     @TempDir
     Path tempDir;
+
 
     @Test
     public void test() throws IOException {
