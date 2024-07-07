@@ -43,8 +43,8 @@ public class RegistryProcessor extends AbstractProcessor {
             Yaml yaml = new Yaml();
             Map<String, String> load;
             try {
-                objectFile = filer.getResource(StandardLocation., "", registry.key() + ".yml");
-                load = yaml.load(objectFile.());
+                objectFile = filer.getResource(StandardLocation.CLASS_OUTPUT, "", registry.key() + ".yml").toUri().toURL();
+                load = yaml.load(objectFile.openStream());
                 Field f = clazz.getDeclaredField(field.getSimpleName().toString());
                 f.setAccessible(true);
                 f.set(field.asType(), load.get(registry.value()));
